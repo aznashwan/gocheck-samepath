@@ -1,12 +1,15 @@
 package samepath
 
 import (
+	"os"
 	"fmt"
+	"reflect"
 	"runtime"
 	"strings"
-	"path/fileapth"
+	"path/filepath"
 
 	gc "launchpad.net/gocheck"
+	jc "github.com/juju/testing/checkers"
 )
 
 type samePathChecker struct {
@@ -27,12 +30,12 @@ func (checker *samePathChecker) Check(params []interface{}, names []string) (res
 	}()
 
 	// Convert inputs to strings
-	obtained, isStr := stringOrStringer(params[0])
+	obtained, isStr := jc.StringOrStringer(params[0])
 	if !isStr {
 		value := reflect.ValueOf(params[0])
 		return false, fmt.Sprintf("obtained value is not a string and has no .String(), %s:%#v", value.Kind(), params[0])
 	}
-	expected, isStr := stringOrStringer(params[1])
+	expected, isStr := jc.StringOrStringer(params[1])
 	if !isStr {
 		value := reflect.ValueOf(params[1])
 		return false, fmt.Sprintf("obtained value is not a string and has no .String(), %s:%#v", value.Kind(), params[1])
@@ -75,5 +78,5 @@ func (checker *samePathChecker) Check(params []interface{}, names []string) (res
 	if res {
 		return true, ""
 	}
-	return false, fmt.Sprintf("Not the same file")
+	return false, ""
 }
