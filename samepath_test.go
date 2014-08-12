@@ -46,13 +46,13 @@ func (s *SamePathWindowsSuite) SetUpSuite(c *gc.C) {
 }
 
 func (s *SamePathWindowsSuite) TestSamePathWindowsBasic(c *gc.C) {
-	c.Assert("C:\\Users" sp.SamePath, "C:\\Users")
+	c.Assert("C:\\Users", sp.SamePath, "C:\\Users")
 	c.Assert("C:\\Go\\src", sp.SamePath, "C:/Go/src")
 	c.Assert("C:/Go/src", gc.Not(sp.SamePath), "C:/Go/pkg")
 	c.Assert("C:/UseRs/hAroLd", sp.SamePath, "C:/Users/Harold")
 }
 
-func (s *SamePathSuite) TestSamePathShortenedPaths(c *gc.C) {
+func (s *SamePathWindowsSuite) TestSamePathShortenedPaths(c *gc.C) {
 	c.Assert("C:/PROGRA~1", sp.SamePath, "C:/Program Files")
 	c.Assert("C:/Program Files", sp.SamePath, "C:/PROGRA~1")
 	c.Assert("C:/PROGRA~1", gc.Not(sp.SamePath), "C:/Users")
