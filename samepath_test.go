@@ -25,7 +25,7 @@ func (s * SamePathLinuxSuite) SetUpSuite(c *gc.C) {
 
 func (s *SamePathLinuxSuite) TestSamePathLinuxBasic(c *gc.C) {
 	c.Assert("/usr", sp.SamePath, "/usr")
-	c.Assert("/usr\\share", sp.SamePath, "/usr/share")
+	c.Assert("/usr/share", sp.SamePath, "/usr/share")
 	c.Assert("/usr/Share", gc.Not(sp.SamePath), "/usr/share")
 }
 

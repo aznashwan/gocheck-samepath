@@ -17,7 +17,7 @@ type samePathChecker struct {
 }
 
 var SamePath gc.Checker = &samePathChecker{
-	&gc.CheckerInfo{Name: "SamePath", Params: []string{"obtained", "epected"}},
+	&gc.CheckerInfo{Name: "SamePath", Params: []string{"obtained", "expected"}},
 }
 
 func (checker *samePathChecker) Check(params []interface{}, names []string) (result bool, error string) {
@@ -62,16 +62,16 @@ func (checker *samePathChecker) Check(params []interface{}, names []string) (res
 	// This will throw an error if it's not a file
 	ob, err := os.Stat(obtained)
 	if os.IsNotExist(err) {
-		return false, fmt.Sprintf("file %s does not exist", obtained)
+		return false, ""
 	} else if err != nil {
-		return false, fmt.Sprintf("other stat error: %v", err)
+		return false, ""
 	}
 
 	ex, err := os.Stat(expected)
 	if os.IsNotExist(err) {
-		return false, fmt.Sprintf("file %s does not exist", expected)
+		return false, ""
 	} else if err != nil {
-		return false, fmt.Sprintf("other stat error: %v", err)
+		return false, ""
 	}
 
 	res := os.SameFile(ob, ex)
