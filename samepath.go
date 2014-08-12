@@ -3,6 +3,7 @@ package samepath
 import (
 	"fmt"
 	"runtime"
+	"strings"
 	"path/fileapth"
 
 	gc "launchpad.net/gocheck"
@@ -17,13 +18,15 @@ var SamePath gc.Checker = &samePathChecker{
 }
 
 func (checker *samePathChecker) Check(params []interface{}, names []string) (result bool, error string) {
+	// Check for panics
 	defer func() {
 		if panicked := recover(); panicked != nil {
 			result = false
 			error = fmt.Sprint(panicked)
 		}
-	}
+	}()
 
+	// Convert inputs to strings
 	obtained, isStr := stringOrStringer(params[0])
 	if !isStr {
 		value := reflect.ValueOf(params[0])
@@ -35,17 +38,42 @@ func (checker *samePathChecker) Check(params []interface{}, names []string) (res
 		return false, fmt.Sprintf("obtained value is not a string and has no .String(), %s:%#v", value.Kind(), params[1])
 	}
 
-	switch runtime.GOOS {
-	case "windows":
-		// we used FromSlash() to middigate any platform-specific separator 
-		// differences and hackily used EvalSymlinks() to assure shortened paths
-		// and symlinks are properly accounted for
-		obtained = filepath.FromSlash(filepath.EvalSymlinks(obtained))
-		expected = filepath.FromSlash(filepath.EvalSymlinks(expected))
+	// Convert paths to proper format
+	obtained = filepath.FromSlash(obtained)
+	expected = filepath.FromSlash(expected)
 
-		return obtained == expected, ""
-	case "linux":
-		// on linux it is simpler since there are no shortened paths to deal with
-		return obtained == expected, ""
+	// If running on Windows, paths will be case-insensitive and thus we
+	// normalize the inputs to a default of all upper-case
+	if runtime.GOOS == "windows" {
+		obtained = strings.ToUpper(obtained)
+		expected = strings.ToUpper(expected)
 	}
+
+	// Same path does not check further is the inputs are already equal
+	if obtained == expected {
+		return true, ""
+	}
+
+	// If it's not the same path, check if it points to the same file.
+	// Thus, the cases with windows-shortened paths are accounted for
+	// This will throw an error if it's not a file
+	ob, err := os.Stat(obtained)
+	if os.IsNotExist(err) {
+		return false, fmt.Sprintf("file %s does not exist", obtained)
+	} else if err != nil {
+		return false, fmt.Sprintf("other stat error: %v", err)
+	}
+
+	ex, err := os.Stat(expected)
+	if os.IsNotExist(err) {
+		return false, fmt.Sprintf("file %s does not exist", expected)
+	} else if err != nil {
+		return false, fmt.Sprintf("other stat error: %v", err)
+	}
+
+	res := os.SameFile(ob, ex)
+	if res {
+		return true, ""
+	}
+	return false, fmt.Sprintf("Not the same file")
 }
